@@ -1,0 +1,35 @@
+{
+  "name": "risk-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Earth Risk Dashboard - Real-time environmental and disaster risk assessment",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "seed": "ts-node scripts/seed-zip.js",
+    "cron:dev": "turbo run cron:dev",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.1.0",
+    "prettier": "^3.2.4",
+    "ts-node": "^10.9.2",
+    "turbo": "^1.11.3",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@8.14.0",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

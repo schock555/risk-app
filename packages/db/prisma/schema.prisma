@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model ZipCode {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  latitude   Float
+  longitude  Float
+  city       String
+  state      String
+  county     String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users      User[]
+  hazardLogs HazardLog[]
+
+  @@index([code])
+  @@map("zip_codes")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  password_hash String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  favoriteZips ZipCode[]
+
+  @@map("users")
+}
+
+model HazardLog {
+  id          String   @id @default(cuid())
+  zip_code_id String
+  hazard_type String   // wildfire, air_quality, flood, earthquake, etc.
+  severity    String   // low, moderate, high, extreme
+  data        Json     // Raw data from API
+  source      String   // NASA_FIRMS, EPA_AIRNOW, etc.
+  recorded_at DateTime @default(now())
+
+  zipCode ZipCode @relation(fields: [zip_code_id], references: [id])
+
+  @@index([zip_code_id, hazard_type])
+  @@index([recorded_at])
+  @@map("hazard_logs")
+}
