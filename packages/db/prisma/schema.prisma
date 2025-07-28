@@ -10,49 +10,99 @@ datasource db {
   url       = env("DATABASE_URL")
 }
 
+enum HazardType {
+  WILDFIRE
+  AIR_QUALITY
+  FLOOD
+  EARTHQUAKE
+  WATER_QUALITY
+  HEAT_WAVE
+  WEATHER_ALERT
+  VOLCANO
+  TSUNAMI
+}
+
+enum Severity {
+  NONE
+  LOW
+  MODERATE
+  HIGH
+  EXTREME
+}
+
 model ZipCode {
-  id         String   @id @default(cuid())
-  code       String   @unique
-  latitude   Float
-  longitude  Float
-  city       String
-  state      String
-  county     String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  code      String   @id // 5-digit ZIP as primary key
+  latitude  Float
+  longitude Float
+  city      String
+  state     String   @db.Char(2)
+  county    String?
+  timezone  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  users      User[]
-  hazardLogs HazardLog[]
+  hazardLogs      HazardLog[]
+  hazardSnapshots HazardSnapshot[]
+  favoritedBy     User[]           @relation("FavoriteZips")
 
-  @@index([code])
   @@map("zip_codes")
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  name          String?
-  password_hash String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?  @map("password_hash")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  favoriteZips ZipCode[]
+  favoriteZips ZipCode[] @relation("FavoriteZips")
+  notifications Notification[]
 
   @@map("users")
 }
 
 model HazardLog {
-  id          String   @id @default(cuid())
-  zip_code_id String
-  hazard_type String   // wildfire, air_quality, flood, earthquake, etc.
-  severity    String   // low, moderate, high, extreme
-  data        Json     // Raw data from API
-  source      String   // NASA_FIRMS, EPA_AIRNOW, etc.
-  recorded_at DateTime @default(now())
+  id          String     @id @default(cuid())
+  zipCode     ZipCode    @relation(fields: [zipCodeCode], references: [code])
+  zipCodeCode String     @map("zip_code_code")
+  type        HazardType
+  severity    Severity
+  data        Json
+  source      String // NASA_FIRMS, EPA_AIRNOW, etc.
+  recordedAt  DateTime   @default(now())
 
-  zipCode ZipCode @relation(fields: [zip_code_id], references: [id])
-
-  @@index([zip_code_id, hazard_type])
-  @@index([recorded_at])
+  @@index([zipCodeCode, type, recordedAt])
+  @@index([recordedAt])
   @@map("hazard_logs")
+}
+
+model HazardSnapshot {
+  zipCode     ZipCode    @relation(fields: [zipCodeCode], references: [code])
+  zipCodeCode String     @map("zip_code_code")
+  type        HazardType
+  severity    Severity
+  data        Json
+  lastChecked DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  expiresAt   DateTime // When cache should be refreshed
+
+  @@id([zipCodeCode, type])
+  @@index([expiresAt])
+  @@map("hazard_snapshots")
+}
+
+model Notification {
+  id         String     @id @default(cuid())
+  user       User       @relation(fields: [userId], references: [id])
+  userId     String     @map("user_id")
+  type       HazardType
+  severity   Severity
+  zipCode    String
+  message    String
+  sentAt     DateTime   @default(now())
+  readAt     DateTime?
+
+  @@index([userId, readAt])
+  @@map("notifications")
 }

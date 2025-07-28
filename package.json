@@ -13,18 +13,20 @@
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "seed": "ts-node scripts/seed-zip.js",
+    "seed:zip": "tsx scripts/seed-zip.ts",
     "cron:dev": "turbo run cron:dev",
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.19.9",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "csv-parser": "^3.2.0",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.1.0",
     "prettier": "^3.2.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
     "turbo": "^1.11.3",
     "typescript": "^5.3.3"
   },
